@@ -1,6 +1,9 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import SearchModal from '../components/SearchModal.astro';
+import BackToTop from '../components/BackToTop.astro';
 import { getLangFromUrl, useTranslations, type Lang } from '../i18n';
 import '../styles/global.css';
 
@@ -32,6 +35,10 @@ const fullTitle = title === 'ANexus' ? title : `${title} | ANexus`;
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="ANexus RSS" href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <ViewTransitions />
     <title>{fullTitle}</title>
   </head>
   <body>
@@ -40,6 +47,8 @@ const fullTitle = title === 'ANexus' ? title : `${title} | ANexus`;
       <slot />
     </main>
     <Footer lang={currentLang} />
+    <SearchModal />
+    <BackToTop />
   </body>
 </html>
 
@@ -47,5 +56,17 @@ const fullTitle = title === 'ANexus' ? title : `${title} | ANexus`;
   main {
     min-height: calc(100vh - var(--nav-height) - 120px);
     padding-top: var(--nav-height);
+    animation: pageEnter 0.4s ease-out;
+  }
+
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

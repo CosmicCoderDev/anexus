@@ -1,5 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import CopyButton from '../components/CopyButton.astro';
+import TableOfContents from '../components/TableOfContents.astro';
 import '../styles/markdown.css';
 import { getLangFromUrl, useTranslations, type Lang } from '../i18n';
 
@@ -43,6 +45,8 @@ const formattedDate = date.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US',
     <div class="prose">
       <slot />
     </div>
+    <CopyButton />
+    <TableOfContents />
   </article>
 </BaseLayout>
 

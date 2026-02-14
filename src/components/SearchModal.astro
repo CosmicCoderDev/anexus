@@ -1,0 +1,259 @@
+---
+/**
+ * SearchModal — Pagefind 搜索对话框
+ * Cmd/Ctrl+K 打开，ESC 关闭。使用 Pagefind UI 进行全文搜索。
+ */
+---
+
+<div class="search-overlay" id="search-overlay">
+  <div class="search-modal" id="search-modal">
+    <div class="search-header">
+      <div class="search-input-wrapper">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          class="search-input"
+          id="search-input"
+          placeholder="搜索文章..."
+          autocomplete="off"
+        />
+        <kbd class="search-kbd">ESC</kbd>
+      </div>
+    </div>
+    <div class="search-results" id="search-results">
+      <p class="search-hint">输入关键词开始搜索</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const overlay = document.getElementById('search-overlay');
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const results = document.getElementById('search-results');
+    if (!overlay || !modal || !input || !results) return;
+
+    let pagefind: any = null;
+
+    async function loadPagefind() {
+      if (pagefind) return;
+      try {
+        // Use dynamic script to avoid Vite processing in dev mode
+        const pf = (window as any).pagefind;
+        if (pf) {
+          pagefind = pf;
+          return;
+        }
+        // Try loading the script
+        const script = document.createElement('script');
+        script.src = '/pagefind/pagefind.js';
+        script.type = 'module';
+        await new Promise<void>((resolve, reject) => {
+          script.onload = () => resolve();
+          script.onerror = () => reject();
+          document.head.appendChild(script);
+        });
+        // Wait a tick for module to register
+        await new Promise(r => setTimeout(r, 100));
+        pagefind = (window as any).pagefind;
+        if (pagefind) await pagefind.init();
+      } catch {
+        pagefind = null;
+      }
+    }
+
+    function open() {
+      overlay.classList.add('open');
+      input.focus();
+      document.body.style.overflow = 'hidden';
+      loadPagefind();
+    }
+
+    function close() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      input.value = '';
+      results.innerHTML = '<p class="search-hint">输入关键词开始搜索</p>';
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        overlay.classList.contains('open') ? close() : open();
+      }
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        close();
+      }
+    });
+
+    // Click overlay to close
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+
+    // Search input
+    let debounce: ReturnType<typeof setTimeout>;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(async () => {
+        const query = input.value.trim();
+        if (!query) {
+          results.innerHTML = '<p class="search-hint">输入关键词开始搜索</p>';
+          return;
+        }
+
+        if (!pagefind) {
+          results.innerHTML = '<p class="search-hint">搜索功能在构建后可用 (npm run build)</p>';
+          return;
+        }
+
+        const search = await pagefind.search(query);
+        if (search.results.length === 0) {
+          results.innerHTML = '<p class="search-hint">未找到相关结果</p>';
+          return;
+        }
+
+        const items = await Promise.all(
+          search.results.slice(0, 8).map((r: any) => r.data())
+        );
+
+        results.innerHTML = items.map((item: any) => `
+          <a href="${item.url}" class="search-result-item">
+            <span class="result-title">${item.meta?.title || item.url}</span>
+            <span class="result-excerpt">${item.excerpt}</span>
+          </a>
+        `).join('');
+      }, 200);
+    });
+
+    // Nav search button trigger
+    const searchBtn = document.querySelector('.nav-search-btn');
+    searchBtn?.addEventListener('click', open);
+  });
+</script>
+
+<style>
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .search-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .search-modal {
+    width: min(560px, 90vw);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    transform: translateY(-10px) scale(0.98);
+    transition: transform 0.2s ease;
+  }
+
+  .search-overlay.open .search-modal {
+    transform: translateY(0) scale(1);
+  }
+
+  .search-header {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .search-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    flex: 1;
+    font-size: var(--text-base);
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .search-kbd {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    padding: 2px 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+  }
+
+  .search-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--space-sm);
+  }
+
+  .search-hint {
+    padding: var(--space-xl);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .search-result-item {
+    display: block;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background 0.15s ease;
+  }
+
+  .search-result-item:hover {
+    background: var(--bg-secondary);
+  }
+
+  .result-title {
+    display: block;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    margin-bottom: 2px;
+  }
+
+  .result-excerpt {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .result-excerpt mark {
+    background: rgba(59, 130, 246, 0.3);
+    color: var(--text-primary);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+</style>
