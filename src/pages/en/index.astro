@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/Hero.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations } from '../../i18n';
+
+const lang = 'en';
+const t = useTranslations(lang);
+
+const projects = (await getCollection('projects'))
+  .filter(p => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const posts = (await getCollection('blog'))
+  .filter(p => !p.data.draft && p.data.lang === 'en')
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 5);
+---
+
+<BaseLayout lang={lang}>
+  <Hero lang={lang} />
+
+  <section class="container section">
+    <h2 class="section-title">{t('section.featured')}</h2>
+    <div class="projects-grid">
+      {projects.map(project => (
+        <ProjectCard
+          title={project.data.title}
+          description={project.data.description}
+          tags={project.data.tags}
+          repo={project.data.repo}
+        />
+      ))}
+    </div>
+    <a href="/en/projects" class="view-all">{t('section.allProjects')} →</a>
+  </section>
+
+  <section class="container section">
+    <h2 class="section-title">{t('section.latest')}</h2>
+    <div class="posts-list">
+      {posts.map(post => (
+        <PostCard
+          title={post.data.title}
+          date={post.data.date}
+          description={post.data.description}
+          tags={post.data.tags}
+          slug={post.id}
+          lang={lang}
+          readingTime={post.data.readingTime}
+        />
+      ))}
+    </div>
+    <a href="/en/blog" class="view-all">{t('section.allPosts')} →</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .section { padding: var(--space-3xl) 0; }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+  }
+  .view-all {
+    display: inline-block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .view-all:hover { color: var(--accent-blue); }
+  @media (max-width: 768px) {
+    .projects-grid { grid-template-columns: 1fr; }
+  }
+</style>

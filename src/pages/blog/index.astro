@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations } from '../../i18n';
+
+const lang = 'zh';
+const t = useTranslations(lang);
+
+const posts = (await getCollection('blog'))
+  .filter(p => !p.data.draft && p.data.lang === 'zh')
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// 收集所有标签
+const allTags = [...new Set(posts.flatMap(p => p.data.tags))];
+---
+
+<BaseLayout title={`${t('nav.blog')} | ANexus`} lang={lang}>
+  <div class="container page">
+    <header class="page-header">
+      <h1 class="page-title">{t('nav.blog')}</h1>
+      <p class="page-desc">深度技术复盘 · 架构设计 · 踩坑记录</p>
+    </header>
+
+    <div class="tag-filter">
+      {allTags.map(tag => (
+        <a href={`/tags/${tag}`} class="filter-tag">#{tag}</a>
+      ))}
+    </div>
+
+    <div class="posts-list">
+      {posts.map(post => (
+        <PostCard
+          title={post.data.title}
+          date={post.data.date}
+          description={post.data.description}
+          tags={post.data.tags}
+          slug={post.id}
+          lang={lang}
+          readingTime={post.data.readingTime}
+        />
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <p class="empty">还没有文章，敬请期待 ✨</p>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: var(--space-3xl) 0;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-desc {
+    color: var(--text-muted);
+    font-size: var(--text-base);
+  }
+
+  .tag-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .filter-tag {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    padding: 4px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .filter-tag:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--space-4xl) 0;
+  }
+</style>

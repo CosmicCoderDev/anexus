@@ -1,0 +1,160 @@
+---
+import { useTranslations, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  name?: string;
+}
+
+const { lang, name = 'ANexus' } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="mesh-gradient"></div>
+  </div>
+  <div class="hero-content container">
+    <p class="hero-greeting">{t('hero.greeting')}</p>
+    <h1 class="hero-name">{name}<span class="dot">.</span></h1>
+    <p class="hero-tagline">{t('hero.tagline')}</p>
+    <p class="hero-desc">{t('hero.description')}</p>
+    <div class="hero-links">
+      <a href="https://github.com/CosmicCoderDev" target="_blank" rel="noopener" class="hero-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a href="/rss.xml" class="hero-btn secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795.001 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.742-7.115-15.793-15.839-15.82zm0-8.18v4.819c12.951.115 23.437 10.621 23.5 23.581h4.5c-.063-15.675-12.778-28.387-28-28.4z"/></svg>
+        RSS
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: var(--space-4xl) 0;
+    overflow: hidden;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .mesh-gradient {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    top: -25%;
+    left: -25%;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+    animation: meshFloat 20s ease-in-out infinite;
+  }
+
+  @keyframes meshFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(2%, -1%) rotate(1deg); }
+    66% { transform: translate(-1%, 2%) rotate(-1deg); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-greeting {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero-name {
+    font-size: var(--text-5xl);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: var(--space-md);
+  }
+
+  .dot {
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-tagline {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero-desc {
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    max-width: 500px;
+    margin-bottom: var(--space-xl);
+  }
+
+  .hero-links {
+    display: flex;
+    gap: var(--space-md);
+  }
+
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+
+  .hero-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .hero-btn.secondary {
+    background: transparent;
+    border-color: var(--border);
+  }
+
+  .hero-btn.secondary:hover {
+    background: var(--bg-tertiary);
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      min-height: 60vh;
+      padding: var(--space-3xl) 0;
+    }
+
+    .hero-name {
+      font-size: var(--text-4xl);
+    }
+
+    .hero-tagline {
+      font-size: var(--text-base);
+    }
+  }
+</style>

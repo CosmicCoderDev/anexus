@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+import { useTranslations } from '../i18n';
+
+const lang = 'zh';
+const t = useTranslations(lang);
+
+const projects = (await getCollection('projects'))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title={`${t('nav.projects')} | ANexus`} lang={lang}>
+  <div class="container page">
+    <header class="page-header">
+      <h1 class="page-title">{t('nav.projects')}</h1>
+      <p class="page-desc">我构建的开源项目和工具。</p>
+    </header>
+
+    <div class="projects-grid">
+      {projects.map(project => (
+        <ProjectCard
+          title={project.data.title}
+          description={project.data.description}
+          tags={project.data.tags}
+          repo={project.data.repo}
+          href={project.data.url}
+        />
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: var(--space-3xl) 0;
+  }
+
+  .page-header {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-desc {
+    color: var(--text-muted);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  @media (max-width: 768px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

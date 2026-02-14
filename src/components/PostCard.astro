@@ -1,0 +1,92 @@
+---
+import { useTranslations, getLocalizedPath, type Lang } from '../i18n';
+
+interface Props {
+  title: string;
+  date: Date;
+  description?: string;
+  tags?: string[];
+  slug: string;
+  lang: Lang;
+  readingTime?: number;
+}
+
+const { title, date, description, tags = [], slug, lang, readingTime } = Astro.props;
+const t = useTranslations(lang);
+
+const formattedDate = date.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<a href={getLocalizedPath(`/blog/${slug}`, lang)} class="post-card">
+  <div class="post-meta">
+    <time datetime={date.toISOString()}>{formattedDate}</time>
+    {readingTime && <span class="reading-time">· {readingTime} {t('post.min')}</span>}
+  </div>
+  <h3 class="post-title">{title}</h3>
+  {description && <p class="post-desc">{description}</p>}
+  {tags.length > 0 && (
+    <div class="post-tags">
+      {tags.map(tag => (
+        <span class="tag">#{tag}</span>
+      ))}
+    </div>
+  )}
+</a>
+
+<style>
+  .post-card {
+    display: block;
+    padding: var(--space-lg) var(--space-xl);
+    border-left: 3px solid var(--border);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--duration-normal) var(--ease-out);
+    margin-bottom: var(--space-md);
+  }
+
+  .post-card:hover {
+    border-left-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding-left: calc(var(--space-xl) + 4px);
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: var(--space-xs);
+  }
+
+  .post-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: var(--space-xs);
+  }
+
+  .post-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-sm);
+  }
+
+  .post-tags {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .tag {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+</style>
